@@ -107,6 +107,8 @@ def invDominio(url):
 
     descargarPdfs(url)
     inv = open("investigacionDominio.json", "w", encoding="utf-8")
+    arr = []
+    json = {}
 
     try:
         """
@@ -129,7 +131,6 @@ def invDominio(url):
         estadoRegistro = info.registrant_state if hasattr(info, "registrant_state") else "Desconocido"
         paisRegistro = info.registrant_country if hasattr(info, "registrant_country") else "Desconocido"
 
-        arr = []
 
         json = { 
             "dominio": dominio, 
@@ -142,11 +143,14 @@ def invDominio(url):
             "estadoRegistro": estadoRegistro, 
             "paisRegistro": paisRegistro 
         }
-        arr.append(json)
-        j.dump(arr, inv, indent=4)
-        inv.close() 
+      
     except:
         pass
+
+    arr.append(json)
+    j.dump(arr, inv, indent=4)
+    inv.close() 
+  
 
 def invTec(url):
     """
@@ -154,11 +158,12 @@ def invTec(url):
     """
 
     inv = open("investigacionTecnologias.json", "w", encoding="utf-8")
+    arr = []
+    json = {}
 
     descargarImagenes(url)
     try:    
         info = builtwith.parse(url)
-        arr = []
         """
         Se crea un json para guardar la informacion, despues lo guarda en un archivo en formato json
         """
@@ -174,13 +179,14 @@ def invTec(url):
             "AutomatizacionDeMarketing" : info["marketing-automation"] if "marketing-automation" in info else "Desconocido"
         }   
 
-        arr.append(json)
-        j.dump(arr, inv, indent=4)
-        inv.close()
+
 
     except:
         pass
-
+    
+    arr.append(json)
+    j.dump(arr, inv, indent=4)
+    inv.close()
     
 def busquedaCorreos(url):
     """
@@ -213,6 +219,11 @@ def descargarImagenes(url):
     Descarga las imagenes de la pagina web
     """
 
+    # Crea la carpeta para guardar las imagenes
+    cur_path = os.path.abspath(os.curdir)
+    if not os.path.exists(os.path.join(cur_path, 'img/')):
+        os.makedirs(os.path.join(cur_path, 'img/'))
+
     try:
         html = requests.get(url)
         soup = BeautifulSoup(html.text, 'html5lib')
@@ -230,9 +241,7 @@ def descargarImagenes(url):
                 
                 img = requests.get(imgUrl) #petición al url de la imagen
                 name = imgUrl.split("/")[-1] #este nombre esta simplemente para no nombrar yo mismo el archivo
-                cur_path = os.path.abspath(os.curdir)
-                if not os.path.exists(os.path.join(cur_path, 'img/')):
-                    os.makedirs(os.path.join(cur_path, 'img/'))
+
                 
                 open(name,'wb').write(img.content) #abrir/crear un archivo .png con el contenido de la imagen a descargar
                 name = "\\" + name
@@ -251,6 +260,12 @@ def descargarPdfs(url):
     """
     Descarga los pdfs que se encuentren en la web
     """
+
+    # Crea la carpeta para guardar los pdf
+    cur_path = os.path.abspath(os.curdir)
+    if not os.path.exists(os.path.join(cur_path, 'pdf/')):
+        os.makedirs(os.path.join(cur_path, 'pdf/'))
+                    
     try:
         page = requests.get(url)    
         data = page.text
@@ -271,10 +286,6 @@ def descargarPdfs(url):
                     # Obtiene el ultimo / para nomrbrar el archivo
                     ind = i.rfind("/")
                     name = i[ind+1:] #este nombre esta simplemente para no nombrar yo mismo el archivo
-                    cur_path = os.path.abspath(os.curdir)
-                    if not os.path.exists(os.path.join(cur_path, 'pdf/')):
-                        os.makedirs(os.path.join(cur_path, 'pdf/'))
-                    
                     with open(name,'wb') as f:
                         f.write(file.content) #abrir/crear un archivo .pdf con el contenido de la imagen a descargar
                     name = "\\" + name
@@ -386,11 +397,10 @@ def analizarPdfs(url):
     invTec(url)
 
 def investigacion():
-    time.sleep(10)
     # Ruta al script de PowerShell que deseas ejecutar
     script_path = os.path.abspath(os.curdir) + "\\archivos.ps1"
 
-    # Ejecutar el script de PowerShell
+    # Ejecuta el script de PowerShell para crear una carpeta con la investigacion
     try:
         subprocess.run(["powershell", "-File", script_path], check=True)
     except subprocess.CalledProcessError as e:
