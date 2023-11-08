@@ -1,6 +1,6 @@
 import argparse
-from funciones import busquedaCorreos, eliminarArchivosPrevios, leer_k, virus_api
-from funcion_03 import escanear_puertos
+from funciones import busquedaCorreos
+from funcion_03 import escanear_puertos, eliminarArchivosPrevios, leer_k, virus_api
 
 if __name__ == '__main__':
     """
