@@ -1,7 +1,19 @@
-import socket 
+import socket
+import os
+import logging
+import hashlib #Leer hash de un archivo y enviarlo a virus total
+from virus_total_apis import PublicApi #Libreria de virus total
+logging.basicConfig(filename='JAKP7.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def escanear_puertos(ip, puertos_a_escanear):
+    """
+    Buscar puertos abiertos de una ip
+    """
     try:
+        """
+        Crear archivo de reporte de operacion y resultados 
+        """
         with open("Reporte_Escaneo.txt", "w") as archivo:
             archivo.write("Objetivo:\t {}\n".format(ip))
             for puerto in puertos_a_escanear:
@@ -14,5 +26,85 @@ def escanear_puertos(ip, puertos_a_escanear):
                     archivo.write("Puerto {}:\t Cerrado\n".format(puerto))
                 s.close()
     except socket.error as error:
-        print("Error de conexión")
+        logging.error("Error de conexión")
         sys.exit()
+
+def leer_k():
+    """
+    Funcion para leer el archivo que contiene la apikey
+    """
+    key = os.path.join("key", "apikey.txt")
+    try:
+        
+        with open(key, "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        print("No existe apikey.txt. Agrega en la carpeta el archivo y coloca tu API_Key en él desde virus total.")
+        return None
+    logging.info("Llave obtenida exitosamente")
+
+def virus_api(file, key):
+    """
+    Utiliza api virustotal para analizar si existe malware en un archivo
+    """
+    api = PublicApi(key)
+    """
+    Crear archivo que almacena los resultados
+    """
+    with open(file, "rb") as f:
+        hash_md5 = hashlib.md5(f.read()).hexdigest()
+    
+    resp = api.get_file_report(hash_md5)
+
+    info = ""
+
+    
+    if "response_code" in resp and resp["response_code"] == 200:
+        """
+        Revisar si el resultado ha sido recibido o haya conexion
+        """
+        if "results" in resp:
+            msg = resp["results"].get("verbose_msg", "...")
+            info += f'Verbose message: {msg}\n'
+
+            if "positives" in resp["results"]:
+                if resp["results"]["positives"] > 0:
+                    info += "Archivo malicioso\n"
+                else:
+                    info += "Archivo seguro\n"
+            """
+            Contenido que destacaremos del dicciconario en un informe  
+            """
+            sha1 = resp["results"].get("sha1", "sin datos")
+            sha256 = resp["results"].get("sha256", "sin datos")
+            fecha = resp["results"].get("scan_date", "sin datos")
+            total = resp["results"].get("total", "sin datos")
+            permalink = resp["results"].get("permalink", "sin datos")
+
+            info += f'SHA1: {sha1}\n'
+            info += f'SHA256: {sha256}\n'
+            info += f'Fecha escaneo: {fecha}\n'
+            info += f'Motores de escaneo usados: {total}\n'
+            info += f'Enlace al informe completo: {permalink}\n'
+
+        else:
+            info += "Sin resultados.\n"
+    else:
+        info += "No fue posible conectar.\n"
+    
+    return info
+    logging.info("Revision Virus Total completada")
+
+def eliminarArchivosPrevios():
+    """ 
+    Se usa para eliminar las imagenes y pdf pasados
+    """
+    carpetas_a_borrar = ["img", "pdf"]
+    for carpeta in carpetas_a_borrar:
+        try:
+            for archivo in os.listdir(carpeta):
+                ruta_archivo = os.path.join(carpeta, archivo)
+                os.remove(ruta_archivo)
+        except FileNotFoundError:
+            pass
+    logging.info("Eliminacion de archivos terminada")
