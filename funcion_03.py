@@ -39,7 +39,7 @@ def leer_k():
         with open(key, "r") as f:
             return f.read().strip()
     except FileNotFoundError:
-        print("No existe apikey.txt. Agrega en la carpeta el archivo y coloca tu API_Key en él desde virus total.")
+        logging.error("No existe apikey.txt. Agrega en la carpeta el archivo y coloca tu API_Key en él desde virus total.")
         return None
     logging.info("Llave obtenida exitosamente")
 
@@ -91,9 +91,9 @@ def virus_api(file, key):
             info += "Sin resultados.\n"
     else:
         info += "No fue posible conectar.\n"
+        logging.error("No fue posible conectar")        
     
     return info
-    logging.info("Revision Virus Total completada")
 
 def eliminarArchivosPrevios():
     """ 
@@ -106,5 +106,6 @@ def eliminarArchivosPrevios():
                 ruta_archivo = os.path.join(carpeta, archivo)
                 os.remove(ruta_archivo)
         except FileNotFoundError:
+            logging.info("Eliminacion de archivos terminada fallida")
             pass
-    logging.info("Eliminacion de archivos terminada")
+    
