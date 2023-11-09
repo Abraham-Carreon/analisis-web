@@ -6,10 +6,10 @@ echo "Ya casi termina...."
 
 cd investigacion
 
-New-Item -ItemType HardLink -Path "./investigacionDominio.json" -Target "../investigacionDominio.json"
-New-Item -ItemType HardLink -Path "./metaimagenes.json" -Target "../metaimagenes.json"
-New-Item -ItemType HardLink -Path "./metapdfs.json" -Target "../metapdfs.json"
-New-Item -ItemType HardLink -Path "./investigacionTecnologias.json" -Target "../investigacionTecnologias.json"
+New-Item -ItemType HardLink -Path "./investigacionDominio.json" -Value "../investigacionDominio.json" -Force
+New-Item -ItemType HardLink -Path "./metaimagenes.json" -Value "../metaimagenes.json" -Force
+New-Item -ItemType HardLink -Path "./metapdfs.json" -Value "../metapdfs.json" -Force
+New-Item -ItemType HardLink -Path "./investigacionTecnologias.json" -Value "../investigacionTecnologias.json" -Force
 
 echo ""
 echo "Terminado!"
