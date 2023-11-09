@@ -39,7 +39,7 @@ def leer_k():
         with open(key, "r") as f:
             return f.read().strip()
     except FileNotFoundError:
-        logging.error("No existe apikey.txt. Agrega en la carpeta el archivo y coloca tu API_Key en él desde virus total.")
+        logging.error("No existe apikey.txt. Agrega en la carpeta el archivo y coloca tu API_Key en el desde virus total.")
         return None
     logging.info("Llave obtenida exitosamente")
 
