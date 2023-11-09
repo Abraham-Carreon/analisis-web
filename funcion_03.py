@@ -1,20 +1,20 @@
 import socket
 import os
 import logging
-import hashlib #Leer hash de un archivo y enviarlo a virus total
-from virus_total_apis import PublicApi #Libreria de virus total
-logging.basicConfig(filename='JAKP7.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
+import sys
+import hashlib
+from virus_total_apis import PublicApi
+from datetime import datetime  # Importar datetime para obtener la marca de tiempo
+logging.basicConfig(filename='JAK.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def escanear_puertos(ip, puertos_a_escanear):
-    """
-    Buscar puertos abiertos de una ip
-    """
     try:
-        """
-        Crear archivo de reporte de operacion y resultados 
-        """
-        with open("Reporte_Escaneo.txt", "w") as archivo:
+        # Crear un nombre de archivo con marca de tiempo
+        now = datetime.now()
+        timestamp = now.strftime("%m-%d-%H-%M-%S")
+        filename = f'Reportes/Reporte_Scan_{timestamp}.txt'
+
+        with open(filename, "w") as archivo:
             archivo.write("Objetivo:\t {}\n".format(ip))
             for puerto in puertos_a_escanear:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,6 +28,7 @@ def escanear_puertos(ip, puertos_a_escanear):
     except socket.error as error:
         logging.error("Error de conexion")
         sys.exit()
+
 
 def leer_k():
     """
@@ -44,25 +45,16 @@ def leer_k():
     logging.info("Llave obtenida exitosamente")
 
 def virus_api(file, key):
-    """
-    Utiliza api virustotal para analizar si existe malware en un archivo
-    """
     api = PublicApi(key)
-    """
-    Crear archivo que almacena los resultados
-    """
+
     with open(file, "rb") as f:
         hash_md5 = hashlib.md5(f.read()).hexdigest()
-    
+
     resp = api.get_file_report(hash_md5)
 
     info = ""
 
-    
     if "response_code" in resp and resp["response_code"] == 200:
-        """
-        Revisar si el resultado ha sido recibido o haya conexion
-        """
         if "results" in resp:
             msg = resp["results"].get("verbose_msg", "...")
             info += f'Verbose message: {msg}\n'
@@ -72,9 +64,7 @@ def virus_api(file, key):
                     info += "Archivo malicioso\n"
                 else:
                     info += "Archivo seguro\n"
-            """
-            Contenido que destacaremos del dicciconario en un informe  
-            """
+
             sha1 = resp["results"].get("sha1", "sin datos")
             sha256 = resp["results"].get("sha256", "sin datos")
             fecha = resp["results"].get("scan_date", "sin datos")
@@ -86,15 +76,20 @@ def virus_api(file, key):
             info += f'Fecha escaneo: {fecha}\n'
             info += f'Motores de escaneo usados: {total}\n'
             info += f'Enlace al informe completo: {permalink}\n'
-
         else:
             info += "Sin resultados.\n"
     else:
         info += "No fue posible conectar.\n"
-        logging.error("No fue posible conectar")        
-    
-    return info
+        logging.error("No fue posible conectar")
 
+    now = datetime.now()
+    timestamp = now.strftime("%m-%d-%H-%M-%S")
+    filename = f'Consultas/Reporte_VT_{timestamp}.txt'
+
+    with open(filename, "w") as f:
+        f.write(info)
+
+    return info
 def eliminarArchivosPrevios():
     """ 
     Se usa para eliminar las imagenes y pdf pasados
@@ -108,4 +103,3 @@ def eliminarArchivosPrevios():
         except FileNotFoundError:
             logging.info("Eliminacion de archivos terminada fallida")
             pass
-    
