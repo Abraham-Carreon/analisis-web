@@ -26,7 +26,7 @@ def escanear_puertos(ip, puertos_a_escanear):
                     archivo.write("Puerto {}:\t Cerrado\n".format(puerto))
                 s.close()
     except socket.error as error:
-        logging.error("Error de conexión")
+        logging.error("Error de conexion")
         sys.exit()
 
 def leer_k():
