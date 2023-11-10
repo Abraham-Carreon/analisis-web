@@ -8,8 +8,13 @@ from datetime import datetime  # Importar datetime para obtener la marca de tiem
 logging.basicConfig(filename='JAK.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def escanear_puertos(ip, puertos_a_escanear):
+    """
+    Buscar puertos abiertos de una ip
+    """
     try:
-        # Crear un nombre de archivo con marca de tiempo
+        """
+        Crear archivo de reporte de operacion [con marca de tiempo y resultado]
+        """
         now = datetime.now()
         timestamp = now.strftime("%m-%d-%H-%M-%S")
         filename = f'Reportes/Reporte_Scan_{timestamp}.txt'
@@ -45,8 +50,13 @@ def leer_k():
     logging.info("Llave obtenida exitosamente")
 
 def virus_api(file, key):
+    """
+    Utiliza api virustotal para analizar si existe malware en un archivo
+    """
     api = PublicApi(key)
-
+    """
+    Crear archivo que almacena los resultados
+    """
     with open(file, "rb") as f:
         hash_md5 = hashlib.md5(f.read()).hexdigest()
 
@@ -55,6 +65,9 @@ def virus_api(file, key):
     info = ""
 
     if "response_code" in resp and resp["response_code"] == 200:
+        """
+        Revisar si el resultado ha sido recibido o haya conexion
+        """
         if "results" in resp:
             msg = resp["results"].get("verbose_msg", "...")
             info += f'Verbose message: {msg}\n'
@@ -64,7 +77,9 @@ def virus_api(file, key):
                     info += "Archivo malicioso\n"
                 else:
                     info += "Archivo seguro\n"
-
+            """
+            Contenido que destacaremos del dicciconario en un informe  
+            """
             sha1 = resp["results"].get("sha1", "sin datos")
             sha256 = resp["results"].get("sha256", "sin datos")
             fecha = resp["results"].get("scan_date", "sin datos")
